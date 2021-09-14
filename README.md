@@ -2,7 +2,7 @@
 
 ## Task Definition
 
-The task is to generate natural language comments for a code, and evaluted by [smoothed bleu-4](https://www.aclweb.org/anthology/C04-1072.pdf) score.
+The task is to generate code from natural language, and evaluted by bleu (https://www.aclweb.org/anthology/C04-1072.pdf) score.
 
 ## Dataset
 
@@ -19,51 +19,13 @@ The dataset we use comes from [CodeSearchNet](https://arxiv.org/pdf/1909.09436.p
 unzip dataset.zip
 cd dataset
 wget https://s3.amazonaws.com/code-search-net/CodeSearchNet/v2/python.zip
-wget https://s3.amazonaws.com/code-search-net/CodeSearchNet/v2/java.zip
-wget https://s3.amazonaws.com/code-search-net/CodeSearchNet/v2/ruby.zip
-wget https://s3.amazonaws.com/code-search-net/CodeSearchNet/v2/javascript.zip
-wget https://s3.amazonaws.com/code-search-net/CodeSearchNet/v2/go.zip
-wget https://s3.amazonaws.com/code-search-net/CodeSearchNet/v2/php.zip
-
 unzip python.zip
-unzip java.zip
-unzip ruby.zip
-unzip javascript.zip
-unzip go.zip
-unzip php.zip
 rm *.zip
 rm *.pkl
 
 python preprocess.py
 rm -r */final
 cd ..
-```
-
-### Download data and preprocess in an online notebook(like Google Colab)
-
-```shell
-import os
-!unzip dataset.zip
-os.chdir("/content/dataset")
-!wget https://s3.amazonaws.com/code-search-net/CodeSearchNet/v2/python.zip
-!wget https://s3.amazonaws.com/code-search-net/CodeSearchNet/v2/java.zip
-!wget https://s3.amazonaws.com/code-search-net/CodeSearchNet/v2/ruby.zip
-!wget https://s3.amazonaws.com/code-search-net/CodeSearchNet/v2/javascript.zip
-!wget https://s3.amazonaws.com/code-search-net/CodeSearchNet/v2/go.zip
-!wget https://s3.amazonaws.com/code-search-net/CodeSearchNet/v2/php.zip
-
-!unzip python.zip
-!unzip java.zip
-!unzip ruby.zip
-!unzip javascript.zip
-!unzip go.zip
-!unzip php.zip
-!rm *.zip
-!rm *.pkl
-
-!python preprocess.py
-!rm -r */final
-os.chdir("../")
 ```
 
 
@@ -91,29 +53,11 @@ For each file, each line in the uncompressed file represents one function.  One 
 
   - **docstring_tokens:** tokenized version of `docstring`
 
-### Data Statistic
-
-| Programming Language | Training |  Dev   |  Test  |
-| :------------------- | :------: | :----: | :----: |
-| Python               | 251,820  | 13,914 | 14,918 |
-| PHP                  | 241,241  | 12,982 | 14,014 |
-| Go                   | 167,288  | 7,325  | 8,122  |
-| Java                 | 164,923  | 5,183  | 10,955 |
-| JavaScript           |  58,025  | 3,885  | 3,291  |
-| Ruby                 |  24,927  | 1,400  | 1,261  |
 
 ## Evaluator
 
-We provide a script to evaluate predictions for this task, and report smoothed bleu-4 score.
+We provide a script to evaluate predictions for this task, and report smoothed bleu score.
 
-### Example
-
-```shell
-python evaluator/evaluator.py evaluator/reference.txt < evaluator/predictions.txt
-```
-
-Total: 5
-9.554726113590661
 
 ## Pipeline-CodeBERT
 
@@ -133,7 +77,7 @@ To fine-tune encoder-decoder on the dataset
 cd code
 lang=ruby #programming language
 lr=5e-5
-batch_size=32
+batch_size=8
 beam_size=10
 source_length=256
 target_length=128
@@ -169,12 +113,10 @@ python ../evaluator/evaluator.py model/$lang/test_1.gold < model/$lang/test_1.ou
 
 The results on the test set are shown as below:
 
-| Model       |   Ruby    | Javascript |    Go     |  Python   |   Java    |    PHP    |  Overall  |
-| ----------- | :-------: | :--------: | :-------: | :-------: | :-------: | :-------: | :-------: |
-| Seq2Seq     |   9.64    |   10.21    |   13.98   |   15.93   |   15.09   |   21.08   |   14.32   |
-| Transformer |   11.18   |   11.59    |   16.38   |   15.81   |   16.26   |   22.12   |   15.56   |
-| [RoBERTa](https://arxiv.org/pdf/1907.11692.pdf)     |   11.17   |   11.90    |   17.72   |   18.14   |   16.47   |   24.02   |   16.57   |
-| [CodeBERT](https://arxiv.org/pdf/2002.08155.pdf)    | **12.16** | **14.90**  | **18.07** | **19.06** | **17.65** | **25.16** | **17.83** |
+| Model        |     2K    |     10K   |    30K    | 
+| -----------  | :-------: | :-------: | :-------: |
+| Transformers |   4.58    |   6.89    |    7,19   |
+| Our model    | **10.24** | **12.24** | **13.04** |
 
 
 ## Reference
